@@ -111,6 +111,12 @@ class HParsonsDirective(RunestoneIdDirective):
         assert 1,1 == world
         assert 0,1 == hello
         assert 2,1 == 42
+        --context--
+        line before parsons code (can be empty)
+        line before parsons code
+        ****
+        line after parsons code
+        line after parsons code
     """
 
     required_arguments = 1

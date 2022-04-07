@@ -40,6 +40,26 @@ Randomized Block with Block Based Feedback - Python highlighting
     None
 
 
+Randomized Block with Block Based Feedback - Python highlighting + context and indent
+-------------------------------------------------------------------------------------
+.. hparsons:: test_hparsons_block_context_1 
+    :language: python
+    :dburl: /_static/test.db
+    :randomize:
+    :blockanswer: 0 1 2 3
+
+    Python highlighting for keywords
+    ~~~~
+    --blocks--
+    return
+    test
+    or
+    None
+    --context--
+    def fun(test):
+        ****
+    x = 1
+
 Randomized Block with Block Based Feedback - Java highlighting
 ----------------------------------------------------------------
 .. hparsons:: test_hparsons_block_3

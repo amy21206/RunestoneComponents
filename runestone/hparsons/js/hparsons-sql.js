@@ -39,16 +39,11 @@ export default class SQLHParons extends RunestoneBase {
         this.loadButton = null;
         this.outerDiv = null;
         this.controlDiv = null;
-        let prefixEnd = this.code.indexOf("^^^^");
-        if (prefixEnd > -1) {
-            this.prefix = this.code.substring(0, prefixEnd);
-            this.code = this.code.substring(prefixEnd + 5);
-        }
-        suffStart = this.code.indexOf("--unittest--");
-        if (suffStart > -1) {
-            this.suffix = this.code.substring(suffStart + 5);
-            this.code = this.code.substring(0, suffStart);
-        }
+        console.log(this.code)
+
+        this.originalBlocks = this.getSettings('--blocks--');
+        this.unittest = this.getSettings('--unittest--');
+        this.context = this.getSettings('--context--');
 
         // Change to factory when more execution based feedback is included
         if (this.isBlockGrading) {
@@ -75,6 +70,18 @@ export default class SQLHParons extends RunestoneBase {
         this.feedbackController.init();
     }
 
+    getSettings(delimitier) {
+        let content = null;
+        let st = this.code.indexOf(delimitier);
+        if (st > -1) {
+            let subString = this.code.substring(st);
+            let ed = subString.indexOf('\n--');
+            subString = ed > -1 ? subString.substring(0, ed + 1) : subString;
+            content = subString.split('\n').slice(1,-1);
+        }
+        return content;
+    }
+
 
     // copied from activecode, already modified to add parsons
     createEditor() {
@@ -97,17 +104,12 @@ export default class SQLHParons extends RunestoneBase {
             this.logHorizontalParsonsEvent(ev.detail)
             this.feedbackController.clearFeedback();
         })
-        let blocks = [];
-        let blockIndex = this.code.indexOf('--blocks--');
-        if (blockIndex > -1) {
-            let blocksString = this.code.substring(blockIndex + 10);
-            let endIndex = blocksString.indexOf('\n--');
-            blocksString = endIndex > -1 ? blocksString.substring(0, endIndex) : blocksString;
-            blocks = blocksString.split('\n');
-        }
         this.hparsonsInput = $(this.outerDiv).find("horizontal-parsons")[0];
-        this.originalBlocks = blocks.slice(1,-1);
-        this.hparsonsInput.parsonsData = blocks.slice(1,-1);
+        this.hparsonsInput.parsonsData = JSON.parse(JSON.stringify(this.originalBlocks));
+        if (this.context) {
+            console.log('set context hparsons')
+            this.hparsonsInput.setContext(this.context);
+        }
     }
 
     createOutput() {

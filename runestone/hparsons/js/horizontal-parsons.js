@@ -7980,6 +7980,8 @@ class ParsonsInput {
     storedSourceBlocks;
     storedSourceBlockExplanations;
     hljsLanguage;
+    contextBefore;
+    contextAfter;
     // if the input has been initialized once
     initialized;
     constructor(parentElement, reusable, randomize) {
@@ -7997,10 +7999,22 @@ class ParsonsInput {
         dropTip.innerText = 'Your code (click on a block to remove it):';
         dropTip.classList.add('hparsons-tip');
         this.el.append(dropTip);
+        const contextBefore = document.createElement('div');
+        contextBefore.id = 'hparsons-' + this.parentElement.toolNumber + '-context-before';
+        contextBefore.classList.add('context');
+        contextBefore.classList.add('hide');
+        this.el.appendChild(contextBefore);
+        this.contextBefore = contextBefore;
         this._dropArea = document.createElement('div');
         this.el.appendChild(this._dropArea);
         this._dropArea.classList.add('drop-area');
         this._prevPosition = -1;
+        const contextAfter = document.createElement('div');
+        contextAfter.id = 'hparsons-' + this.parentElement.toolNumber + '-context-after';
+        contextAfter.classList.add('context');
+        contextAfter.classList.add('hide');
+        this.el.appendChild(contextAfter);
+        this.contextAfter = contextAfter;
         this.storedSourceBlocks = [];
         this.storedSourceBlockExplanations = null;
         this.reusable = reusable;
@@ -8009,14 +8023,7 @@ class ParsonsInput {
         this._dropSortable = null;
         this._initSortable();
         this.initialized = false;
-        let languageMap = new Map(Object.entries({
-            'html': 'xml',
-            'python': 'python',
-            'javascript': 'javascript',
-            'java': 'java',
-            'sql': 'sql'
-        }));
-        this.hljsLanguage = languageMap.get(parentElement.language);
+        this.hljsLanguage = this.parentElement.language;
     }
     getText = () => {
         let ret = '';
@@ -8342,6 +8349,11 @@ class ParsonsInput {
             }
         }
     }
+    setIndent = (indent) => {
+        const fontSize = Number(window.getComputedStyle(this.contextBefore, null).getPropertyValue('font-size').slice(0, -2));
+        console.log(window.getComputedStyle(this.contextBefore, null).getPropertyValue('font-size'));
+        this._dropArea.style.paddingLeft = fontSize * indent + 'px';
+    };
 }
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -20403,15 +20415,21 @@ class TextInput {
         }, 'silent');
     };
     restoreAnswer(type, answer) {
-        // TODO (misplaced): consider removing expandable blocks
         // TODO: add logging to restoring answer
         if (type != 'text' || typeof answer !== 'string') {
             return;
         }
         this.quill?.setText(answer);
     }
+    setIndent = (indent) => {
+    };
 }
 
+core.registerLanguage('javascript', javascript_1);
+core.registerLanguage('sql', sql_1);
+core.registerLanguage('java', java_1);
+core.registerLanguage('xml', xml_1);
+core.registerLanguage('python', python_1);
 class HParsonsElement extends HTMLElement {
     root;
     _parsonsData;
@@ -20423,6 +20441,8 @@ class HParsonsElement extends HTMLElement {
     temporaryInputEvent;
     inputDiv;
     language;
+    contextBefore;
+    contextAfter;
     constructor() {
         super();
         HParsonsElement.toolCount += 1;
@@ -20447,7 +20467,15 @@ class HParsonsElement extends HTMLElement {
         // this.regexErrorPosition = -1;
         this.initRegexInput();
         this.temporaryInputEvent = {};
-        this.language = this.getAttribute('language') || 'none';
+        let languageMap = new Map(Object.entries({
+            'html': 'xml',
+            'python': 'python',
+            'javascript': 'javascript',
+            'java': 'java',
+            'sql': 'sql'
+        }));
+        this.language = languageMap.get(this.getAttribute('language') || 'none');
+        this.contextBefore = this.contextAfter = null;
     }
     set parsonsData(data) {
         this._parsonsData = data;
@@ -20475,6 +20503,8 @@ class HParsonsElement extends HTMLElement {
         sheet.innerHTML += '.parsons-block .tooltip::after {content: " ";position: absolute; top: 100%;left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: black transparent transparent transparent;}\n';
         sheet.innerHTML += '.drag-area .parsons-block:hover .tooltip { visibility: visible;}\n';
         sheet.innerHTML += '.drag-area { background-color: #efefff; padding: 0 5px; height: 42px; margin: 2px 0; }\n';
+        sheet.innerHTML += '.context.hide {display: none;}\n';
+        sheet.innerHTML += '.context {padding: 0 4px; background-color: #eea; font-family: monospace;}\n';
         // unittest
         this.root.appendChild(sheet);
         const global_sheet = document.createElement('style');
@@ -20580,6 +20610,34 @@ class HParsonsElement extends HTMLElement {
     getParsonsTextArray() {
         return this.hparsonsInput._getTextArray();
     }
+    setContext = (context) => {
+        const contextBefore = this.querySelector('#hparsons-' + this.toolNumber + '-context-before');
+        const contextAfter = this.querySelector('#hparsons-' + this.toolNumber + '-context-after');
+        let codeIndex = -1;
+        let indent = 0;
+        for (let i = 0; i < context.length; ++i) {
+            indent = context[i].indexOf('****');
+            if (indent != -1) {
+                codeIndex = i;
+                break;
+            }
+        }
+        if (this.language) {
+            contextBefore.innerHTML = core.highlight(context.slice(0, codeIndex).join('\n'), { language: this.language, ignoreIllegals: true }).value;
+            contextAfter.innerHTML = core.highlight(context.slice(codeIndex + 1).join('\n'), { language: this.language, ignoreIllegals: true }).value;
+        }
+        else {
+            contextBefore.innerText = context.slice(0, codeIndex).join('\n');
+            contextAfter.innerText = context.slice(codeIndex + 1).join('\n');
+        }
+        contextBefore.classList.remove('hide');
+        contextAfter.classList.remove('hide');
+        if (indent) {
+            this.hparsonsInput.setIndent(indent);
+            console.log('indent:');
+            console.log(indent);
+        }
+    };
 }
 customElements.define('horizontal-parsons', HParsonsElement);
 
