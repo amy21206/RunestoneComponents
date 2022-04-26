@@ -7985,7 +7985,7 @@ class ParsonsInput {
     constructor(parentElement, reusable, randomize) {
         this.el = document.createElement('div');
         this.parentElement = parentElement;
-        this.el.id = 'regextool-' + this.parentElement.toolNumber + '-parsons-input';
+        this.el.id = 'hparsonstool-' + this.parentElement.toolNumber + '-parsons-input';
         const dragTip = document.createElement('div');
         dragTip.innerText = 'Drag or click the blocks below to form your code:';
         dragTip.classList.add('hparsons-tip');
@@ -20286,7 +20286,7 @@ class TextInput {
     constructor(parentElement) {
         this.parentElement = parentElement;
         this.el = document.createElement('div');
-        this.el.id = 'regextool-' + this.parentElement.toolNumber + '-regex-input';
+        this.el.id = 'hparsonstool-' + this.parentElement.toolNumber + '-text-input';
         this.el.classList.add('regex-input');
         this.quill = null;
         this.groups = new Array();

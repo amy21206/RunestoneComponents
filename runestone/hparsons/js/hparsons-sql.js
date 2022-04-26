@@ -4,6 +4,21 @@ import "../css/hparsons.css";
 import "../css/hljs-xcode.css";
 import BlockFeedback from "./BlockFeedback.js";
 import SQLFeedback from "./SQLFeedback.js";
+import CodeMirror from "codemirror";
+import "codemirror/mode/python/python.js";
+import "codemirror/mode/css/css.js";
+import "codemirror/mode/htmlmixed/htmlmixed.js";
+import "codemirror/mode/xml/xml.js";
+import "codemirror/mode/javascript/javascript.js";
+import "codemirror/mode/sql/sql.js";
+import "codemirror/mode/clike/clike.js";
+import "codemirror/mode/octave/octave.js";
+import "codemirror/lib/codemirror.css";
+// import "codemirror/addon/hint/show-hint.js";
+// import "codemirror/addon/hint/show-hint.css";
+// import "codemirror/addon/hint/sql-hint.js";
+// import "codemirror/addon/hint/anyword-hint.js";
+// import "codemirror/addon/edit/matchbrackets.js";
 
 
 export var hpList;
@@ -22,7 +37,8 @@ export default class SQLHParons extends RunestoneBase {
         var orig = $(opts.orig).find("textarea")[0];
         this.reuse = $(orig).data('reuse') ? true : false;
         this.randomize = $(orig).data('randomize') ? true : false;
-        this.isBlockGrading = $(orig).data('blockanswer') ? true : false;
+        this.textentry = $(orig).data('textentry') ? true : false;
+        this.isBlockGrading = !this.textentry && $(orig).data('blockanswer') ? true : false;
         this.language = $(orig).data('language');
         if (this.isBlockGrading) {
             this.blockAnswer = $(orig).data('blockanswer').split(' ');
@@ -80,6 +96,14 @@ export default class SQLHParons extends RunestoneBase {
     createEditor() {
         this.outerDiv = document.createElement("div");
         $(this.origElem).replaceWith(this.outerDiv);
+        if (this.textentry) {
+            this.createTextInput();
+        } else {
+            this.createHParsonsInput();
+        }
+    }
+
+    createHParsonsInput() {
         let parsonsHTML = `<horizontal-parsons id='${this.divid}-hparsons'`
         parsonsHTML += ` input-type='parsons' `;
         if (this.reuse) {
@@ -108,6 +132,43 @@ export default class SQLHParons extends RunestoneBase {
         this.hparsonsInput = $(this.outerDiv).find("horizontal-parsons")[0];
         this.originalBlocks = blocks.slice(1,-1);
         this.hparsonsInput.parsonsData = blocks.slice(1,-1);
+    }
+
+    createTextInput() {
+        var linkdiv = document.createElement("div");
+        // $(this.outerDiv).addClass("hp_section alert alert-warning");
+        var codeDiv = document.createElement("div");
+        this.codeDiv = codeDiv;
+        this.outerDiv.appendChild(codeDiv);
+        var edmode = this.language;
+        // because we can only run SQL and regex here:
+        if (edmode === "sql") {
+            edmode = "text/x-sql";
+        } else {
+            edmode = null;
+        }
+        var editor = CodeMirror(codeDiv, {
+            value: this.code,
+            lineNumbers: true,
+            mode: edmode,
+            indentUnit: 4,
+            matchBrackets: true,
+            autoMatchParens: true,
+            scrollbarStyle: null,
+            extraKeys: {
+                Tab: "indentMore",
+                "Shift-Tab": "indentLess",
+                "Ctrl-Space": "autocomplete",
+            },
+        });
+        // set editor to one line
+        editor.setSize(null, editor.defaultTextHeight() + 2 * 4);
+        editor.on("beforeChange", function(instance, change) {
+            var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
+            change.update(change.from, change.to, [newtext]);
+            return true;
+        });
+        this.editor = editor;
     }
 
     createOutput() {

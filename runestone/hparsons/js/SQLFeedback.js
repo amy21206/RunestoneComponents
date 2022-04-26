@@ -264,7 +264,7 @@ export default class SQLFeedback extends HParsonsFeedback {
         // TODO: fix or remove text entry
         var prog;
         if (this.hparsons.textentry) {
-            prog = this.hparsons.hparsonsInput.getCurrentInput();
+            prog = this.hparsons.editor.getValue() + "\n";
         } else {
             prog = this.hparsons.hparsonsInput.getParsonsTextArray().join(' ') + "\n";
         }

@@ -52,6 +52,7 @@ TEMPLATE_END = """
     %(dburl)s
     %(reuse)s
     %(randomize)s
+    %(textentry)s
     %(blockanswer)s
     style="visibility: hidden;">
 %(initialsetting)s
@@ -94,11 +95,20 @@ def depart_hp_html(self, node):
 class HParsonsDirective(RunestoneIdDirective):
     """
     .. hparsons:: uniqueid
-       :language: python, java, javscript, sql, html: only for highlighting purpose.
+       :language: python, java, javscript, sql, html
+            Only sql has execution based feedback.
+            Specify other languages for highlighting purpose
        :dburl: only for sql -- url to load database
+            If not textentry mode and blockanswer option is used, this will be ignored.
        :randomize: randomize the order of horizontal parsons
+            If textentry option is used, this will be ignored.
        :reuse: only for parsons -- make the blocks reusable
-       :blockanswer: 0 1 2 3 # Provide answer for block-based feedback. Please note that the number of block start from 0. If not provided, will use execution based feedback.
+            If textentry option is used, this will be ignored.
+       :blockanswer: 0 1 2 3 # Provide answer for block-based feedback.
+            Please note that the number of block start from 0.
+            If not provided, will use execution based feedback.
+            If textentry option is used, this will be ignored.
+       :textentry: use text entry instead of horizontal parsons problems
 
         Here is the problem description. It must ends with the tildes.
         Make sure you use the correct delimitier for each section below.
@@ -124,6 +134,7 @@ class HParsonsDirective(RunestoneIdDirective):
             "reuse": directives.flag,
             "randomize": directives.flag,
             "blockanswer": directives.unchanged,
+            "textentry": directives.flag,
         }
     )
 
@@ -146,6 +157,11 @@ class HParsonsDirective(RunestoneIdDirective):
             self.options['randomize'] = ' data-randomize="true"'
         else:
             self.options['randomize'] = ''
+        
+        if "textentry" in self.options:
+            self.options['textentry'] = ' data-textentry="true"'
+        else:
+            self.options['textentry'] = ''
 
         if "blockanswer" in self.options:
             self.options["blockanswer"] = "data-blockanswer='{}'".format(self.options["blockanswer"])
@@ -197,12 +213,12 @@ class HParsonsDirective(RunestoneIdDirective):
             )
         else:
             if (
-                not hasattr(env, "dberr_activecode_reported")
-                or not env.dberr_activecode_reported
+                not hasattr(env, "dberr_hparsons_reported")
+                or not env.dberr_hparsons_reported
             ):
-                env.dberr_activecode_reported = True
+                env.dberr_hparsons_reported = True
                 print(
-                    "Unable to save to source_code table in activecode.py. Possible problems:"
+                    "Unable to save to source_code table in hparsons.py. Possible problems:"
                 )
                 print("  1. dburl or course_id are not set in conf.py for your book")
                 print("  2. unable to connect to the database using dburl")

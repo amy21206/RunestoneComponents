@@ -5,6 +5,23 @@ Test: Horizontal Parsons Problems with SQL
 
 Examples
 ========
+Text entry option to simplify A-B testing
+------------------------------------------
+.. hparsons:: test_hparsons_textentry_1
+    :language: sql
+    :dburl: /_static/test.db
+    :randomize:
+    :textentry:
+
+    This is a horizontal Parsons problem! Feedback is based on block for this problem.
+    The blocks are randomized, but cannot be reused ;)
+    ~~~~
+    --unittest--
+    assert 1,1 == world
+    assert 0,1 == hello
+    assert 2,1 == 42
+
+
 Randomized Block with Block Based Feedback
 ------------------------------------------
 .. hparsons:: test_hparsons_block_1
