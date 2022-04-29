@@ -5,6 +5,74 @@ Test: Horizontal Parsons Problems with SQL
 
 Examples
 ========
+Randomized Block with Regex Execution Feedback
+----------------------------------------------
+.. hparsons:: test_hparsons_regex_1
+    :language: regex
+    :randomize:
+
+    Testing Randomized block with regex execution feedback
+    ~~~~
+    --blocks--
+    [aeiou]
+    [a-z]
+    *
+    [^aeiou]
+    --pyunittest--
+    from unittest.gui import TestCaseGui
+
+    class myTests(TestCaseGui):
+
+       def testOne(self):
+           self.assertEqual(strict_match(regex,'banana'),None,"banana")
+           self.assertEqual(strict_match(regex, 'apple'), 'apple', "apple")
+    
+    myTests().main()
+
+.. hparsons:: test_hparsons_regex_2
+    :language: regex
+    :randomize:
+
+    Testing Randomized block with regex execution feedback
+    ~~~~
+    --blocks--
+    "
+    "
+    .
+    +?
+    +
+    --pyunittest--
+    from unittest.gui import TestCaseGui
+
+    class myTests(TestCaseGui):
+
+       def testOne(self):
+           self.assertEqual(re.findall(regex,'My favorite musicals are "Rent", "Chicago", and "Dear Evan Hansen"'),['"Rent"','"Chicago"','"Dear Evan Hansen"'],'My favorite musicals are "Rent", "Chicago", and "Dear Evan Hansen"')
+           self.assertEqual(re.findall(regex,'I am allergic to "mango" and "kiwi fruit"'),['"mango"','"kiwi fruit"'],'I am allergic to "mango" and "kiwi fruit"')
+    
+    myTests().main()
+
+.. activecode:: testunits2
+   :nocodelens:
+
+   Fix the following code so that it always correctly adds two numbers.
+   ~~~~
+   def add(a,b):
+      return 4
+
+   ====
+   from unittest.gui import TestCaseGui
+
+   class myTests(TestCaseGui):
+
+       def testOne(self):
+           self.assertEqual(add(2,2),4,"A feedback string when the test fails")
+           self.assertAlmostEqual(add(2.0,3.0), 5.0, 5, "Try adding your parameters")
+
+   myTests().main()
+
+
+
 Randomized Block with Block Based Feedback
 ------------------------------------------
 .. hparsons:: test_hparsons_block_1

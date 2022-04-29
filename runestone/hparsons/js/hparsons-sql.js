@@ -4,6 +4,7 @@ import "../css/hparsons.css";
 import "../css/hljs-xcode.css";
 import BlockFeedback from "./BlockFeedback.js";
 import SQLFeedback from "./SQLFeedback.js";
+import RegexFeedback from "./RegexFeedback.js";
 
 
 export var hpList;
@@ -54,7 +55,23 @@ export default class SQLHParons extends RunestoneBase {
         if (this.isBlockGrading) {
             this.feedbackController = new BlockFeedback(this);
         } else {
-            this.feedbackController = new SQLFeedback(this);
+            if (this.language == 'regex') {
+                this.feedbackController = new RegexFeedback(this);
+            } else if (this.language == 'sql') {
+                this.feedbackController = new SQLFeedback(this);
+            } else {
+                this.feedbackController = null;
+            }
+        }
+
+        // getting pyunittest
+        // todo (refactor): merge parsing codes to one function
+        this.pyunittest = null;
+        let index = this.code.indexOf('--pyunittest--');
+        if (index > -1) {
+            let content = this.code.substring(index + 14);
+            let endIndex = content.indexOf('\n--');
+            this.pyunittest = endIndex > -1 ? content.substring(0, endIndex) : content;
         }
 
         // creating UI components
@@ -102,7 +119,7 @@ export default class SQLHParons extends RunestoneBase {
         if (blockIndex > -1) {
             let blocksString = this.code.substring(blockIndex + 10);
             let endIndex = blocksString.indexOf('\n--');
-            blocksString = endIndex > -1 ? blocksString.substring(0, endIndex) : blocksString;
+            blocksString = endIndex > -1 ? blocksString.substring(0, endIndex+1) : blocksString;
             blocks = blocksString.split('\n');
         }
         this.hparsonsInput = $(this.outerDiv).find("horizontal-parsons")[0];
