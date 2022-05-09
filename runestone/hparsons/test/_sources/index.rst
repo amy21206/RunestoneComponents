@@ -11,7 +11,7 @@ Randomized Block with Regex Execution Feedback
     :language: regex
     :randomize:
 
-    Testing Randomized block with regex execution feedback
+    Match words that starts with a vowel (a, e, i, o, u)
     ~~~~
     --blocks--
     [aeiou]
@@ -24,8 +24,8 @@ Randomized Block with Regex Execution Feedback
     class myTests(TestCaseGui):
 
        def testOne(self):
-           self.assertEqual(strict_match(regex,'banana'),None,"banana")
-           self.assertEqual(strict_match(regex, 'apple'), 'apple', "apple")
+           self.assertEqual(strict_match(regex,'banana'),None,"testcase: 'banana'")
+           self.assertEqual(strict_match(regex, 'apple'), 'apple', "testcase: 'apple'")
     
     myTests().main()
 
