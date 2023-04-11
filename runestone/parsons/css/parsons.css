@@ -350,3 +350,10 @@
 #timed_Test .pagination {
     margin: 5px 0;
 }
+
+
+/*cxv: blur text*/
+.cxv-blurred .lines code span{
+    color: transparent !important;
+    text-shadow: 0 0 8px #000;
+}

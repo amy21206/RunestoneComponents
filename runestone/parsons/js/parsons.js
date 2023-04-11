@@ -70,6 +70,22 @@ export default class Parsons extends RunestoneBase {
         Parsons.counter++; //    Unique identifier
         this.counterId = "parsons-" + Parsons.counter;
 
+        // CxV: initial difficulty model set for this question
+        // TODO: does not make sense for now
+        this.cxvModelDifficulty = Math.round(Math.random() * 10) / 10;
+        // CxV: visibility of difficulty model
+        // TODO: make an option
+        this.cxvModelVisible = true;
+        // CxV: How many different difficulties
+        // TODO: adjust based on problem
+        // as a demo, always 5 levels:
+        // 1/3 number blocks + no distractors
+        // 2/3 number blocks + no distractors
+        // all blocks + without distractors
+        // more blocks + distractors
+        // write code
+        this.cxvModelLevelCounts = 5;
+
         // for (var i = 0; i < this.children.length; i++) {
         //     if ($(this.children[i]).is("[data-question]")) {
         //         this.question = this.children[i];
@@ -177,6 +193,15 @@ export default class Parsons extends RunestoneBase {
         $(this.keyboardTip).hide();
         this.sortContainerDiv = document.createElement("div");
         $(this.sortContainerDiv).addClass("sortable-code-container");
+
+        // CxV: add container for difficulty slider
+        this.cxvModelVisualizationDiv = document.createElement("div");
+        this.sortContainerDiv.appendChild(this.cxvModelVisualizationDiv);
+        this.cxvInitializeDifficultyVis(this.cxvModelVisualizationDiv);
+        this.cxvDifficultyControlsDiv = document.createElement("div");
+        this.sortContainerDiv.appendChild(this.cxvDifficultyControlsDiv);
+        this.cxvInitializeControl(this.cxvDifficultyControlsDiv);
+
         $(this.sortContainerDiv).attr(
             "aria-describedby",
             this.counterId + "-tip"
@@ -194,6 +219,8 @@ export default class Parsons extends RunestoneBase {
         this.sourceArea = document.createElement("div");
         this.sourceArea.id = this.counterId + "-source";
         $(this.sourceArea).addClass("source");
+        // CXV: blur text by default
+        $(this.sourceArea).addClass("cxv-blurred");
         $(this.sourceArea).attr(
             "aria-describedby",
             this.counterId + "-sourceTip"
@@ -276,6 +303,41 @@ export default class Parsons extends RunestoneBase {
                 $(this.outerDiv).prepend(this.question);
             }
         }
+    }
+    cxvInitializeDifficultyVis(container) {
+        // let easySpan = document.createElement('span');
+        // $(easySpan).text('Easy');
+        // let difficultSpan = document.createElement('span');
+        // $(difficultSpan).text('Difficult');
+        let input = document.createElement('input');
+        $(input).attr('type', 'range');
+        $(input).attr('min', '1');
+        $(input).attr('max', `${this.cxvModelLevelCounts}`);
+        $(input).attr('step', '1');
+        $(input).attr('value', `${Math.max(Math.round(this.cxvModelLevelCounts * this.cxvModelDifficulty))}`);
+        $(input).prop('disabled', true);
+        if (!this.cxvModelVisible) {
+            $(input).css('display', 'none');
+        }
+        // container.appendChild(easySpan);
+        container.appendChild(input);
+        // container.appendChild(difficultSpan);
+    }
+    cxvInitializeControl(container) {
+        let easierBtn = document.createElement('button');
+        container.appendChild(easierBtn);
+        $(easierBtn).text('Easier');
+        let harderBtn = document.createElement('button');
+        container.appendChild(harderBtn);
+        $(harderBtn).text('Harder');
+        let confirmBtn = document.createElement('button');
+        container.appendChild(confirmBtn);
+        $(confirmBtn).text('Confirm');
+        confirmBtn.onclick = () => this.cxvConfirmDifficulty();
+    }
+    cxvConfirmDifficulty() {
+        $(this.sourceArea).removeClass('cxv-blurred');
+        $(this.cxvDifficultyControlsDiv).css('display', 'none');
     }
     // Initialize lines and solution properties
     initializeLines(text) {
@@ -398,6 +460,7 @@ export default class Parsons extends RunestoneBase {
             line.indent = indents.indexOf(line.indent);
         }
         this.solution = solution;
+        console.log(solution);
     }
     // Based on the blocks, create the source and answer areas
     async initializeAreas(sourceBlocks, answerBlocks, options) {
