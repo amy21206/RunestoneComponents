@@ -79,10 +79,10 @@ export default class Parsons extends RunestoneBase {
         // CxV: How many different difficulties
         // TODO: adjust based on problem
         // as a demo, always 5 levels:
-        // 1/3 number blocks + no distractors
-        // 2/3 number blocks + no distractors
-        // all blocks + without distractors
-        // more blocks + distractors
+        // 1/2 number blocks + no distractors
+        // all blocks + no distractors
+        // all blocks + half distractors
+        // all blocks + distractors
         // write code
         this.cxvModelLevelCounts = 5;
 
@@ -103,6 +103,9 @@ export default class Parsons extends RunestoneBase {
         this.checkCount = 0;
         this.numDistinct = 0;
         this.hasSolved = false;
+        
+        this.cxvCreateFullText(fulltext.trim());
+        // CxV: commented out and only reveal after confirming
         this.initializeLines(fulltext.trim());
         this.initializeView();
         this.caption = "Parsons";
@@ -112,7 +115,17 @@ export default class Parsons extends RunestoneBase {
         if (typeof Prism !== "undefined") {
             Prism.highlightAllUnder(this.containerDiv);
         }
+        // TODO: this is a workaround async load data.
+        this.cxvDelay(500).then(()=> {
+            this.initializeLines(this.cxvFullTextLevels[parseInt(this.cxvModelSlider.value) - 1]);
+            this.resetView();
+        })
     }
+
+    cxvDelay(time) {
+        return new Promise(resolve => setTimeout(resolve, time));
+    }
+
     // Based on the data-fields in the original HTML, initialize options
     initializeOptions() {
         var options = {
@@ -309,18 +322,18 @@ export default class Parsons extends RunestoneBase {
         // $(easySpan).text('Easy');
         // let difficultSpan = document.createElement('span');
         // $(difficultSpan).text('Difficult');
-        let input = document.createElement('input');
-        $(input).attr('type', 'range');
-        $(input).attr('min', '1');
-        $(input).attr('max', `${this.cxvModelLevelCounts}`);
-        $(input).attr('step', '1');
-        $(input).attr('value', `${Math.max(Math.round(this.cxvModelLevelCounts * this.cxvModelDifficulty))}`);
-        $(input).prop('disabled', true);
+        this.cxvModelSlider = document.createElement('input');
+        $(this.cxvModelSlider).attr('type', 'range');
+        $(this.cxvModelSlider).attr('min', '1');
+        $(this.cxvModelSlider).attr('max', `${this.cxvModelLevelCounts}`);
+        $(this.cxvModelSlider).attr('step', '1');
+        $(this.cxvModelSlider).attr('value', `${Math.max(Math.round(this.cxvModelLevelCounts * this.cxvModelDifficulty))}`);
+        $(this.cxvModelSlider).prop('disabled', true);
         if (!this.cxvModelVisible) {
-            $(input).css('display', 'none');
+            $().css('display', 'none');
         }
         // container.appendChild(easySpan);
-        container.appendChild(input);
+        container.appendChild(this.cxvModelSlider);
         // container.appendChild(difficultSpan);
     }
     cxvInitializeControl(container) {
@@ -335,9 +348,97 @@ export default class Parsons extends RunestoneBase {
         $(confirmBtn).text('Confirm');
         confirmBtn.onclick = () => this.cxvConfirmDifficulty();
     }
+    // CXV: from the given source (text), create different version of texts that contains different number of blocks.
+    cxvCreateFullText(originalText) {
+        // console.log('original text')
+        // console.log(originalText)
+        // the original version: originalText
+        this.cxvFullTextLevels = ['','','',originalText];
+        // getting original blocks
+        let textBlocks = originalText.split('---')
+        if (textBlocks.length === 1) {
+            // If there are no ---, then every line is its own block
+            textBlocks = text.split("\n");
+        }
+        // index that has "#distractor"; will always be ignored
+        let distractorList = [];
+        // index that has "#paired"; some will be randomly selected
+        let pairedList = [];
+        // answer blocks
+        let answerList = [];
+        for (let i = 0; i < textBlocks.length; ++i) {
+            if (textBlocks[i].includes('#distractor')) {
+                distractorList.push(i);
+            } else if (textBlocks[i].includes('#paired')) {
+                pairedList.push(i);
+            } else {
+                answerList.push(i);
+            }
+
+        }
+        
+        // 0: 1/2 number blocks + no distractors
+        let selectedBlocks = [];
+        for (let i = 0; i < answerList.length; ++i) {
+            let mergedBlockContent = textBlocks[answerList[i]];
+            if (i + 1 < answerList.length) {
+                i += 1;
+                mergedBlockContent += textBlocks[answerList[i]];
+            }
+            selectedBlocks.push(mergedBlockContent);
+        }
+        let newText = selectedBlocks.join('---');
+        this.cxvFullTextLevels[0] = newText;
+        // console.log('level 1');
+        // console.log(this.cxvFullTextLevels[0]);
+
+        // 1: all blocks + no distractors
+        selectedBlocks = [];
+        for (let i = 0; i < answerList.length; ++i) {
+            selectedBlocks.push(textBlocks[answerList[i]]);
+        }
+        newText = selectedBlocks.join('---');
+        this.cxvFullTextLevels[1] = newText;
+        // console.log('level 2');
+        // console.log(this.cxvFullTextLevels[1]);
+
+        // 2: all blocks + half distractors
+        selectedBlocks = [];
+        // shuffle paired distractor index list
+        let ignoredDistractorList = pairedList 
+            .map(value => ({ value, sort: Math.random() }))
+            .sort((a, b) => a.sort - b.sort)
+            .map(({ value }) => value)
+            .slice(0, Math.ceil(pairedList.length / 2))
+        for (let i = 0; i < textBlocks.length; ++i) {
+            if (!ignoredDistractorList.includes(i) && !distractorList.includes(i)) {
+                // answer or included distractors
+                selectedBlocks.push(textBlocks[i]);
+            }
+        }
+        newText = selectedBlocks.join('---');
+        this.cxvFullTextLevels[2] = newText;
+        // console.log('level 3');
+        // console.log(this.cxvFullTextLevels[2]);
+
+    }
     cxvConfirmDifficulty() {
         $(this.sourceArea).removeClass('cxv-blurred');
         $(this.cxvDifficultyControlsDiv).css('display', 'none');
+
+        // copied from the original constructor
+        // this.initializeLines(fulltext.trim());
+        // this.initializeView();
+        // this.caption = "Parsons";
+        // this.addCaption("runestone");
+        // // Check the server for an answer to complete things
+        // this.checkServer("parsons", true);
+        // if (typeof Prism !== "undefined") {
+        //     Prism.highlightAllUnder(this.containerDiv);
+        // }
+    }
+    csvHandleDifficultyChange() {
+        this.csv
     }
     // Initialize lines and solution properties
     initializeLines(text) {
@@ -460,7 +561,6 @@ export default class Parsons extends RunestoneBase {
             line.indent = indents.indexOf(line.indent);
         }
         this.solution = solution;
-        console.log(solution);
     }
     // Based on the blocks, create the source and answer areas
     async initializeAreas(sourceBlocks, answerBlocks, options) {
@@ -2509,8 +2609,11 @@ export default class Parsons extends RunestoneBase {
         }
         delete this.blocks;
         this.blockIndex = 0;
-        for (let i = 0; i < this.pairedDivs.length; i++) {
-            $(this.pairedDivs[i]).detach();
+        // TODO: dont know why this would not exist
+        if (this.pairedDivs) {
+            for (let i = 0; i < this.pairedDivs.length; i++) {
+                $(this.pairedDivs[i]).detach();
+            }
         }
         $(this.sourceArea).attr("style", "");
         $(this.answerArea).removeClass();

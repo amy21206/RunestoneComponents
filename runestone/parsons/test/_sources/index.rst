@@ -12,11 +12,13 @@ SECTION 1: Parsons Problem
 
 .. parsonsprob:: test_parsons_1
    :adaptive:
-   :order: 0 1 2 3 4
+   :order: 0 1 2 3 4 5
 
    need some text ?
    -----
    def fib(num):
+   =====
+   def fib: #paired
    =====
       if num == 0:
           return 0:
@@ -28,6 +30,46 @@ SECTION 1: Parsons Problem
    =====
       return fib(num - 1) * fib(num - 2) #paired
 
+
+.. parsonsprob:: test_parsons_kk
+   :adaptive:
+   :order: 0 1 2 3 4 5
+
+   need some text ?
+   -----
+   def fib(num):
+   =====
+   def fib: #paired
+   =====
+      if num == 0:
+          return 0:
+   =====
+      if num == 1:
+          return 1:
+   =====
+      return fib(num - 1) + fib(num - 2)
+   =====
+      return fib(num - 1) * fib(num - 2) #paired
+
+.. parsonsprob:: test_parsons_99
+   :adaptive:
+   :order: 0 1 2 3 4 5
+
+   need some text ?
+   -----
+   def fib(num):
+   =====
+   def fib: #paired
+   =====
+      if num == 0:
+          return 0:
+   =====
+      if num == 1:
+          return 1:
+   =====
+      return fib(num - 1) + fib(num - 2)
+   =====
+      return fib(num - 1) * fib(num - 2) #paired
 
 Section 2: Labeling
 
