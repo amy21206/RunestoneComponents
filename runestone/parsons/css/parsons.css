@@ -357,3 +357,16 @@
     color: transparent !important;
     text-shadow: 0 0 8px #000;
 }
+
+/*cxv: hide blocks*/
+.cxv-write-code .source {
+    display: none;
+}
+
+.cxv-write-code div[role=tooltip] {
+    display: none;
+}
+
+.cxv-write-code .parsons-controls {
+    display: none;
+}

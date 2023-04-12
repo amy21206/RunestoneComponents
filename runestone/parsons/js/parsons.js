@@ -117,8 +117,7 @@ export default class Parsons extends RunestoneBase {
         }
         // TODO: this is a workaround async load data.
         this.cxvDelay(500).then(()=> {
-            this.initializeLines(this.cxvFullTextLevels[parseInt(this.cxvModelSlider.value) - 1]);
-            this.resetView();
+            this.cxvHandleDifficultyChange();
         })
     }
 
@@ -339,8 +338,20 @@ export default class Parsons extends RunestoneBase {
     cxvInitializeControl(container) {
         let easierBtn = document.createElement('button');
         container.appendChild(easierBtn);
+        easierBtn.onclick = () => {
+            if (this.cxvModelSlider.value != '1') {
+                this.cxvModelSlider.stepDown(1);
+                this.cxvHandleDifficultyChange();
+            }
+        }
         $(easierBtn).text('Easier');
         let harderBtn = document.createElement('button');
+        harderBtn.onclick = () => {
+            if (this.cxvModelSlider.value != '5') {
+                this.cxvModelSlider.stepUp(1);
+                this.cxvHandleDifficultyChange();
+            }
+        }
         container.appendChild(harderBtn);
         $(harderBtn).text('Harder');
         let confirmBtn = document.createElement('button');
@@ -437,8 +448,18 @@ export default class Parsons extends RunestoneBase {
         //     Prism.highlightAllUnder(this.containerDiv);
         // }
     }
-    csvHandleDifficultyChange() {
-        this.csv
+    cxvHandleDifficultyChange() {
+        let level = parseInt(this.cxvModelSlider.value);
+        if (level < 5) {
+            // not write code
+            $(this.outerDiv).removeClass('cxv-write-code');
+            this.initializeLines(this.cxvFullTextLevels[level - 1]);
+            this.resetView();
+        }
+        if (level == 5) {
+            // write code
+            $(this.outerDiv).addClass('cxv-write-code');
+        }
     }
     // Initialize lines and solution properties
     initializeLines(text) {
