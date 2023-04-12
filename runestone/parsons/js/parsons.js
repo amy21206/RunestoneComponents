@@ -137,6 +137,8 @@ export default class Parsons extends RunestoneBase {
         var adaptive = $(this.origElem).data("adaptive");
         var numbered = $(this.origElem).data("numbered");
         var grader = $(this.origElem).data("grader");
+        var cxvcontrol = $(this.origElem).data("cxvcontrol");
+        var cxvvisualization = $(this.origElem).data("cxvvisualization");
         options["numbered"] = numbered;
         options["grader"] = grader;
         if (maxdist !== undefined) {
@@ -161,6 +163,16 @@ export default class Parsons extends RunestoneBase {
             this.initializeAdaptive();
         }
         options["adaptive"] = adaptive;
+        if (cxvcontrol == undefined) {
+            cxvcontrol = false;
+        }
+        options["cxvcontrol"] = cxvcontrol;
+        this.cxvcontrol = cxvcontrol;
+        if (cxvvisualization == undefined) {
+            cxvvisualization = false;
+        }
+        options["cxvvisualization"] = cxvvisualization;
+        this.cxvvisualization = cxvvisualization;
         // add locale and language
         var locale = eBookConfig.locale;
         if (locale == undefined) {
@@ -232,7 +244,9 @@ export default class Parsons extends RunestoneBase {
         this.sourceArea.id = this.counterId + "-source";
         $(this.sourceArea).addClass("source");
         // CXV: blur text by default
-        $(this.sourceArea).addClass("cxv-blurred");
+        if (this.cxvcontrol) {
+            $(this.sourceArea).addClass("cxv-blurred");
+        }
         $(this.sourceArea).attr(
             "aria-describedby",
             this.counterId + "-sourceTip"
@@ -328,12 +342,12 @@ export default class Parsons extends RunestoneBase {
         $(this.cxvModelSlider).attr('step', '1');
         $(this.cxvModelSlider).attr('value', `${Math.max(Math.round(this.cxvModelLevelCounts * this.cxvModelDifficulty))}`);
         $(this.cxvModelSlider).prop('disabled', true);
-        if (!this.cxvModelVisible) {
-            $().css('display', 'none');
-        }
         // container.appendChild(easySpan);
         container.appendChild(this.cxvModelSlider);
         // container.appendChild(difficultSpan);
+        if (!this.cxvvisualization) {
+            $(container).css('display', 'none');
+        }
     }
     cxvInitializeControl(container) {
         let easierBtn = document.createElement('button');
@@ -358,6 +372,9 @@ export default class Parsons extends RunestoneBase {
         container.appendChild(confirmBtn);
         $(confirmBtn).text('Confirm');
         confirmBtn.onclick = () => this.cxvConfirmDifficulty();
+        if (!this.cxvcontrol) {
+            $(container).css('display', 'none');
+        }
     }
     // CXV: from the given source (text), create different version of texts that contains different number of blocks.
     cxvCreateFullText(originalText) {

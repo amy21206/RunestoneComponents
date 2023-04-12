@@ -46,7 +46,7 @@ TEMPLATE_START = """
 
 TEMPLATE_END = """
         </div>
-        <pre  class="parsonsblocks" data-question_label="%(question_label)s"  %(adaptive)s %(maxdist)s %(order)s %(noindent)s %(language)s %(grader)s %(numbered)s %(optional)s style="visibility: hidden;">
+        <pre  class="parsonsblocks" data-question_label="%(question_label)s"  %(adaptive)s %(maxdist)s %(order)s %(noindent)s %(language)s %(grader)s %(numbered)s %(optional)s %(cxvcontrol)s %(cxvvisualization)s  style="visibility: hidden;">
         %(code)s
         </pre>
         </div>
@@ -74,6 +74,12 @@ def visit_parsons_xml(self, node):
     if node["runestone_options"]["adaptive"]:
         node["runestone_options"]["adaptive"] = "adaptive='yes'"
 
+    if node["runestone_options"]["cxvcontrol"]:
+        node["runestone_options"]["cxvcontrol"] = "cxvcontrol='yes'"
+
+    if node["runestone_options"]["cxvvisualization"]:
+        node["runestone_options"]["cxvvisualization"] = "cxvvisualization='yes'"
+
     if not node["runestone_options"]["noindent"]:
         node["runestone_options"]["noindent"] = "indentation='show'"
     else:
@@ -87,7 +93,7 @@ def visit_parsons_xml(self, node):
         node["runestone_options"]["language"] = "language='python'"
 
     res = (
-        "<exercise label='{divid}' {numbered} {adaptive} {noindent} {language}>".format(
+        "<exercise label='{divid}' {numbered} {adaptive} {noindent} {cxvcontrol} {cxvvisualization} {language}>".format(
             **node["runestone_options"]
         )
     )
@@ -175,6 +181,8 @@ class ParsonsProblem(Assessment):
        :noindent:
        :adaptive:
        :numbered:
+       :cxvcontrol:
+       :cxvvisualization:
 
        Solve my really cool parsons problem...if you can.
        -----
@@ -209,6 +217,8 @@ class ParsonsProblem(Assessment):
             "language": directives.unchanged,
             "noindent": directives.flag,
             "adaptive": directives.flag,
+            "cxvcontrol": directives.flag,
+            "cxvvisualization": directives.flag,
             "numbered": directives.unchanged,
             "grader": directives.unchanged,
         }
@@ -281,6 +291,14 @@ class ParsonsProblem(Assessment):
             self.options["adaptive"] = ' data-adaptive="true"'
         else:
             self.options["adaptive"] = ""
+        if "cxvcontrol" in self.options:
+            self.options["cxvcontrol"] = ' data-cxvcontrol="true"'
+        else:
+            self.options["cxvcontrol"] = ""
+        if "cxvvisualization" in self.options:
+            self.options["cxvvisualization"] = ' data-cxvvisualization="true"'
+        else:
+            self.options["cxvvisualization"] = ""
         if "language" in self.options:
             self.options["language"] = (
                 ' data-language="' + self.options["language"] + '"'
